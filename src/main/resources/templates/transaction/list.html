@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>收支记录</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" th:href="@{/}">
+        <span class="brand-mark">¥</span>
+        <span class="brand-copy">
+            <strong>个人理财记账系统</strong>
+        </span>
+    </a>
+    <nav class="primary-nav" aria-label="主导航">
+        <a th:href="@{/}">总览</a>
+        <a th:href="@{/transactions}" class="active">收支记录</a>
+        <a th:href="@{/transactions/new}">记一笔</a>
+        <a th:href="@{/categories}">分类管理</a>
+        <div class="profile-menu" data-profile-menu>
+            <button class="avatar-trigger" type="button" data-profile-trigger aria-label="个人中心">
+                <img th:if="${currentUser != null && currentUser.avatarData != null}" th:src="${currentUser.avatarData}" alt="">
+                <span th:if="${currentUser == null || currentUser.avatarData == null}"
+                      th:text="${currentUser != null ? #strings.substring(currentUser.username, 0, 1).toUpperCase() : '我'}">我</span>
+            </button>
+            <div class="profile-panel" data-profile-panel>
+                <strong th:text="${currentUser != null ? currentUser.username : '个人中心'}">个人中心</strong>
+                <form th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data">
+                    <label class="profile-upload">
+                        设置头像
+                        <input name="avatar" type="file" accept="image/png,image/jpeg,image/webp" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <a th:href="@{/transactions/export}">导出全部收支</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit">退出登录</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="container">
+    <section class="page-head">
+        <div>
+            <h1>收支记录</h1>
+            <p th:text="${'共 ' + page.total() + ' 条记录'}">共 0 条记录</p>
+        </div>
+        <div class="head-actions">
+            <a class="button secondary"
+               th:href="@{/transactions/export(type=${filter.type},categoryId=${filter.categoryId},month=${filter.month},keyword=${filter.keyword})}">导出Excel</a>
+            <a class="button" th:href="@{/transactions/new}">+ 记一笔</a>
+        </div>
+    </section>
+
+    <div class="toast" th:if="${message}" th:text="${message}">已保存</div>
+
+    <form class="filter-bar enhanced-filter" th:action="@{/transactions}" method="get">
+        <div class="filter-field">
+            <select class="native-control" name="type" data-native-select="type">
+                <option value="">全部类型</option>
+                <option value="1" th:selected="${filter.type == 1}">收入</option>
+                <option value="2" th:selected="${filter.type == 2}">支出</option>
+            </select>
+            <button class="glass-select" type="button" data-dropdown-trigger="type">
+                <span data-dropdown-label="type">全部类型</span>
+                <span class="chevron">⌄</span>
+            </button>
+            <div class="glass-menu" data-dropdown-menu="type">
+                <button type="button" data-value="">全部类型</button>
+                <button type="button" data-value="1">收入</button>
+                <button type="button" data-value="2">支出</button>
+            </div>
+        </div>
+
+        <div class="filter-field">
+            <select class="native-control" name="categoryId" data-native-select="categoryId">
+                <option value="">全部分类</option>
+                <option th:each="category : ${categories}" th:value="${category.id}"
+                        th:text="${category.name}" th:selected="${filter.categoryId == category.id}">分类</option>
+            </select>
+            <button class="glass-select" type="button" data-dropdown-trigger="categoryId">
+                <span data-dropdown-label="categoryId">全部分类</span>
+                <span class="chevron">⌄</span>
+            </button>
+            <div class="glass-menu" data-dropdown-menu="categoryId">
+                <button type="button" data-value="">全部分类</button>
+                <button th:each="category : ${categories}" type="button" th:data-value="${category.id}"
+                        th:text="${category.name}">分类</button>
+            </div>
+        </div>
+
+        <div class="filter-field month-field">
+            <input class="native-control" type="month" name="month" th:value="${filter.month}" data-native-month>
+            <button class="glass-select" type="button" data-month-trigger>
+                <span data-month-label>选择月份</span>
+                <span class="chevron">⌄</span>
+            </button>
+            <div class="glass-menu month-menu" data-month-menu>
+                <div class="month-head">
+                    <button type="button" data-year-prev>‹</button>
+                    <strong data-year-label>2026</strong>
+                    <button type="button" data-year-next>›</button>
+                </div>
+                <div class="month-grid" data-month-grid></div>
+                <div class="month-actions">
+                    <button type="button" data-month-clear>清除</button>
+                    <button type="button" data-month-current>本月</button>
+                </div>
+            </div>
+        </div>
+
+        <input type="search" name="keyword" placeholder="搜索分类或备注" th:value="${filter.keyword}">
+        <button type="submit">搜索</button>
+    </form>
+
+    <template id="nativeFilterFallback">
+        <select name="type">
+            <option value="">全部类型</option>
+            <option value="1" th:selected="${filter.type == 1}">收入</option>
+            <option value="2" th:selected="${filter.type == 2}">支出</option>
+        </select>
+        <select name="categoryId">
+            <option value="">全部分类</option>
+            <option th:each="category : ${categories}" th:value="${category.id}"
+                    th:text="${category.name}" th:selected="${filter.categoryId == category.id}">分类</option>
+        </select>
+        <input type="month" name="month" th:value="${filter.month}">
+        <input type="search" name="keyword" placeholder="搜索分类或备注" th:value="${filter.keyword}">
+        <button type="submit">搜索</button>
+    </template>
+
+    <div class="empty" th:if="${#lists.isEmpty(page.items())}">暂无符合条件的记录</div>
+    <article class="transaction-item" th:each="item : ${page.items()}">
+        <div>
+            <strong th:text="${item.categoryName}">餐饮</strong>
+            <p>
+                <span th:text="${item.recordDate}">2026-06-02</span>
+                <span th:text="${item.remark ?: '无备注'}">备注</span>
+            </p>
+        </div>
+        <div class="row-actions">
+            <span class="amount" th:classappend="${item.type == 1 ? 'income-text' : 'expense-text'}"
+                  th:text="${(item.type == 1 ? '+' : '-') + '¥' + #numbers.formatDecimal(item.amount, 1, 2)}">¥0.00</span>
+            <button class="secondary transaction-edit-button" type="button"
+                    data-edit-transaction
+                    th:data-id="${item.id}"
+                    th:data-type="${item.type}"
+                    th:data-category-id="${item.categoryId}"
+                    th:data-amount="${item.amount}"
+                    th:data-record-date="${item.recordDate}"
+                    th:data-remark="${item.remark}">
+                编辑
+            </button>
+            <form th:action="@{/transactions/{id}/delete(id=${item.id})}" method="post">
+                <button class="link-danger" type="submit">删除</button>
+            </form>
+        </div>
+    </article>
+
+    <nav class="pagination" th:if="${page.totalPages() > 1}">
+        <a th:if="${page.page() > 1}"
+           th:href="@{/transactions(type=${filter.type},categoryId=${filter.categoryId},month=${filter.month},keyword=${filter.keyword},page=${page.page() - 1})}">上一页</a>
+        <span th:text="${'第 ' + page.page() + ' / ' + page.totalPages() + ' 页'}">第 1 页</span>
+        <a th:if="${page.page() < page.totalPages()}"
+           th:href="@{/transactions(type=${filter.type},categoryId=${filter.categoryId},month=${filter.month},keyword=${filter.keyword},page=${page.page() + 1})}">下一页</a>
+    </nav>
+
+    <div class="modal-backdrop" data-transaction-modal hidden>
+        <section class="transaction-modal" role="dialog" aria-modal="true" aria-labelledby="transaction-modal-title">
+            <div class="modal-head">
+                <div>
+                    <h2 id="transaction-modal-title">编辑收支记录</h2>
+                    <p>调整类型、分类、金额、日期和备注。</p>
+                </div>
+                <button class="icon-button" type="button" aria-label="关闭" data-close-transaction-modal>×</button>
+            </div>
+            <form class="modal-form" method="post" data-transaction-form>
+                <label>
+                    类型
+                    <div class="filter-field form-select-field">
+                        <select class="native-control" name="type" required data-native-select="modalType" data-transaction-type>
+                            <option value="1">收入</option>
+                            <option value="2">支出</option>
+                        </select>
+                        <button class="glass-select" type="button" data-dropdown-trigger="modalType">
+                            <span data-dropdown-label="modalType">支出</span>
+                            <span class="chevron"></span>
+                        </button>
+                        <div class="glass-menu form-menu" data-dropdown-menu="modalType">
+                            <button type="button" data-value="1">收入</button>
+                            <button type="button" data-value="2">支出</button>
+                        </div>
+                    </div>
+                </label>
+                <label>
+                    分类
+                    <div class="filter-field form-select-field">
+                        <select class="native-control" name="categoryId" required data-native-select="modalCategory" data-transaction-category>
+                            <option value="">请选择分类</option>
+                            <option th:each="category : ${categories}" th:value="${category.id}"
+                                    th:text="${category.type == 1 ? '收入 - ' + category.name : '支出 - ' + category.name}">
+                                分类
+                            </option>
+                        </select>
+                        <button class="glass-select" type="button" data-dropdown-trigger="modalCategory">
+                            <span data-dropdown-label="modalCategory">请选择分类</span>
+                            <span class="chevron"></span>
+                        </button>
+                        <div class="glass-menu form-menu" data-dropdown-menu="modalCategory">
+                            <button type="button" data-value="">请选择分类</button>
+                            <button th:each="category : ${categories}" type="button" th:data-value="${category.id}"
+                                    th:text="${category.type == 1 ? '收入 - ' + category.name : '支出 - ' + category.name}">
+                                分类
+                            </button>
+                        </div>
+                    </div>
+                </label>
+                <label>
+                    金额
+                    <input name="amount" type="number" min="0.01" step="0.01" required data-transaction-amount>
+                </label>
+                <label>
+                    日期
+                    <div class="filter-field date-field" data-date-picker="modalDate">
+                        <input class="native-control" name="recordDate" type="date" required data-native-date="modalDate" data-transaction-date>
+                        <button class="glass-select" type="button" data-date-trigger="modalDate">
+                            <span data-date-label="modalDate">选择日期</span>
+                            <span class="date-icon"></span>
+                        </button>
+                        <div class="glass-menu date-menu" data-date-menu="modalDate">
+                            <div class="month-head">
+                                <button type="button" data-date-prev="modalDate">‹</button>
+                                <strong data-date-title="modalDate">2026年06月</strong>
+                                <button type="button" data-date-next="modalDate">›</button>
+                            </div>
+                            <div class="date-weekdays">
+                                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                            </div>
+                            <div class="date-grid" data-date-grid="modalDate"></div>
+                            <div class="month-actions">
+                                <button type="button" data-date-today="modalDate">今天</button>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+                <label>
+                    备注
+                    <textarea name="remark" maxlength="200" rows="4" placeholder="例如：午餐外卖" data-transaction-remark></textarea>
+                </label>
+                <div class="form-actions">
+                    <button class="secondary" type="button" data-close-transaction-modal>取消</button>
+                    <button type="submit">保存修改</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+<script>
+    (() => {
+        const closeMenus = () => {
+            document.querySelectorAll('.filter-field.is-open').forEach((field) => {
+                field.classList.remove('is-open');
+            });
+        };
+
+        document.querySelectorAll('[data-native-select]').forEach((select) => {
+            const name = select.dataset.nativeSelect;
+            const label = document.querySelector(`[data-dropdown-label="${name}"]`);
+            const menu = document.querySelector(`[data-dropdown-menu="${name}"]`);
+            const trigger = document.querySelector(`[data-dropdown-trigger="${name}"]`);
+            const syncLabel = () => {
+                label.textContent = select.selectedOptions[0]?.textContent || '请选择';
+                menu.querySelectorAll('button').forEach((button) => {
+                    button.classList.toggle('is-selected', button.dataset.value === select.value);
+                });
+            };
+
+            trigger.addEventListener('click', () => {
+                const field = trigger.closest('.filter-field');
+                const wasOpen = field.classList.contains('is-open');
+                closeMenus();
+                field.classList.toggle('is-open', !wasOpen);
+            });
+
+            menu.querySelectorAll('button').forEach((button) => {
+                button.addEventListener('click', () => {
+                    select.value = button.dataset.value;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    syncLabel();
+                    closeMenus();
+                });
+            });
+
+            select.addEventListener('change', syncLabel);
+            syncLabel();
+        });
+
+        const nativeMonth = document.querySelector('[data-native-month]');
+        const monthLabel = document.querySelector('[data-month-label]');
+        const monthMenu = document.querySelector('[data-month-menu]');
+        const monthGrid = document.querySelector('[data-month-grid]');
+        const yearLabel = document.querySelector('[data-year-label]');
+        const monthTrigger = document.querySelector('[data-month-trigger]');
+        const now = new Date();
+        let visibleYear = nativeMonth.value ? Number(nativeMonth.value.slice(0, 4)) : now.getFullYear();
+        const transactionModal = document.querySelector('[data-transaction-modal]');
+        const transactionForm = document.querySelector('[data-transaction-form]');
+        const transactionFields = {
+            type: document.querySelector('[data-transaction-type]'),
+            category: document.querySelector('[data-transaction-category]'),
+            amount: document.querySelector('[data-transaction-amount]'),
+            date: document.querySelector('[data-transaction-date]'),
+            remark: document.querySelector('[data-transaction-remark]')
+        };
+
+        const formatDateText = (value) => {
+            if (!value) {
+                return '选择日期';
+            }
+            const [year, month, day] = value.split('-');
+            return `${year}/${month}/${day}`;
+        };
+
+        const initDatePicker = (name) => {
+            const input = document.querySelector(`[data-native-date="${name}"]`);
+            const trigger = document.querySelector(`[data-date-trigger="${name}"]`);
+            const label = document.querySelector(`[data-date-label="${name}"]`);
+            const title = document.querySelector(`[data-date-title="${name}"]`);
+            const grid = document.querySelector(`[data-date-grid="${name}"]`);
+            const today = new Date();
+            let visibleDate = input.value ? new Date(`${input.value}T00:00:00`) : today;
+            let dateYear = visibleDate.getFullYear();
+            let dateMonth = visibleDate.getMonth();
+
+            const render = () => {
+                label.textContent = formatDateText(input.value);
+                title.textContent = `${dateYear}年${String(dateMonth + 1).padStart(2, '0')}月`;
+                grid.innerHTML = '';
+                const first = new Date(dateYear, dateMonth, 1);
+                const startOffset = (first.getDay() + 6) % 7;
+                const start = new Date(dateYear, dateMonth, 1 - startOffset);
+                Array.from({ length: 42 }, (_, index) => {
+                    const day = new Date(start);
+                    day.setDate(start.getDate() + index);
+                    const value = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = day.getDate();
+                    button.classList.toggle('is-muted', day.getMonth() !== dateMonth);
+                    button.classList.toggle('is-selected', input.value === value);
+                    button.addEventListener('click', () => {
+                        input.value = value;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                        render();
+                        closeMenus();
+                    });
+                    grid.appendChild(button);
+                });
+            };
+
+            trigger.addEventListener('click', () => {
+                const field = trigger.closest('.filter-field');
+                const wasOpen = field.classList.contains('is-open');
+                closeMenus();
+                field.classList.toggle('is-open', !wasOpen);
+            });
+            document.querySelector(`[data-date-prev="${name}"]`).addEventListener('click', () => {
+                dateMonth -= 1;
+                if (dateMonth < 0) {
+                    dateMonth = 11;
+                    dateYear -= 1;
+                }
+                render();
+            });
+            document.querySelector(`[data-date-next="${name}"]`).addEventListener('click', () => {
+                dateMonth += 1;
+                if (dateMonth > 11) {
+                    dateMonth = 0;
+                    dateYear += 1;
+                }
+                render();
+            });
+            document.querySelector(`[data-date-today="${name}"]`).addEventListener('click', () => {
+                input.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                dateYear = today.getFullYear();
+                dateMonth = today.getMonth();
+                render();
+                closeMenus();
+            });
+            input.addEventListener('change', () => {
+                if (input.value) {
+                    const picked = new Date(`${input.value}T00:00:00`);
+                    dateYear = picked.getFullYear();
+                    dateMonth = picked.getMonth();
+                }
+                render();
+            });
+            render();
+        };
+
+        const openTransactionModal = (data) => {
+            transactionForm.action = `/transactions/${data.id}`;
+            transactionFields.type.value = data.type || '2';
+            transactionFields.category.value = data.categoryId || '';
+            transactionFields.amount.value = data.amount || '';
+            transactionFields.date.value = data.recordDate || '';
+            transactionFields.remark.value = data.remark || '';
+            transactionFields.type.dispatchEvent(new Event('change', { bubbles: true }));
+            transactionFields.category.dispatchEvent(new Event('change', { bubbles: true }));
+            transactionFields.date.dispatchEvent(new Event('change', { bubbles: true }));
+            transactionModal.hidden = false;
+            document.body.classList.add('modal-open');
+            window.requestAnimationFrame(() => transactionFields.amount.focus());
+        };
+
+        const closeTransactionModal = () => {
+            transactionModal.hidden = true;
+            transactionForm.reset();
+            document.body.classList.remove('modal-open');
+        };
+
+        const monthText = (value) => {
+            if (!value) {
+                return '选择月份';
+            }
+            const [year, month] = value.split('-');
+            return `${year}年${month}月`;
+        };
+
+        const renderMonths = () => {
+            yearLabel.textContent = visibleYear;
+            monthLabel.textContent = monthText(nativeMonth.value);
+            monthGrid.innerHTML = '';
+            Array.from({ length: 12 }, (_, index) => {
+                const month = String(index + 1).padStart(2, '0');
+                const value = `${visibleYear}-${month}`;
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = `${index + 1}月`;
+                button.classList.toggle('is-selected', nativeMonth.value === value);
+                button.addEventListener('click', () => {
+                    nativeMonth.value = value;
+                    renderMonths();
+                    closeMenus();
+                });
+                monthGrid.appendChild(button);
+            });
+        };
+
+        monthTrigger.addEventListener('click', () => {
+            const field = monthTrigger.closest('.filter-field');
+            const wasOpen = field.classList.contains('is-open');
+            closeMenus();
+            field.classList.toggle('is-open', !wasOpen);
+        });
+
+        document.querySelector('[data-year-prev]').addEventListener('click', () => {
+            visibleYear -= 1;
+            renderMonths();
+        });
+
+        document.querySelector('[data-year-next]').addEventListener('click', () => {
+            visibleYear += 1;
+            renderMonths();
+        });
+
+        document.querySelector('[data-month-clear]').addEventListener('click', () => {
+            nativeMonth.value = '';
+            renderMonths();
+            closeMenus();
+        });
+
+        document.querySelector('[data-month-current]').addEventListener('click', () => {
+            visibleYear = now.getFullYear();
+            nativeMonth.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            renderMonths();
+            closeMenus();
+        });
+
+        document.querySelectorAll('[data-edit-transaction]').forEach((button) => {
+            button.addEventListener('click', () => openTransactionModal(button.dataset));
+        });
+
+        document.querySelectorAll('[data-close-transaction-modal]').forEach((button) => {
+            button.addEventListener('click', closeTransactionModal);
+        });
+
+        transactionModal.addEventListener('click', (event) => {
+            if (event.target === transactionModal) {
+                closeTransactionModal();
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.filter-field')) {
+                closeMenus();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeMenus();
+                if (!transactionModal.hidden) {
+                    closeTransactionModal();
+                }
+            }
+        });
+
+        renderMonths();
+        initDatePicker('modalDate');
+
+        const profileMenu = document.querySelector('[data-profile-menu]');
+        const profileTrigger = document.querySelector('[data-profile-trigger]');
+        profileTrigger?.addEventListener('click', (event) => {
+            event.stopPropagation();
+            profileMenu.classList.toggle('is-open');
+        });
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('[data-profile-menu]')) {
+                profileMenu?.classList.remove('is-open');
+            }
+        });
+    })();
+</script>
+</body>
+</html>

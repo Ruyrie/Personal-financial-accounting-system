@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>注册 - 个人理财记账系统</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="login-page">
+<main class="login-shell">
+    <section class="login-card">
+        <div class="brand login-brand">
+            <span class="brand-mark">¥</span>
+            <span class="brand-copy">
+                <strong>个人理财记账系统</strong>
+            </span>
+        </div>
+        <div>
+            <h1>创建账户</h1>
+            <p>注册后即可拥有独立的分类和收支记录</p>
+        </div>
+        <div class="toast error" th:if="${error}" th:text="${error}">注册失败</div>
+        <form class="login-form" th:action="@{/register}" method="post">
+            <label>
+                用户名
+                <input name="username" autocomplete="username" required autofocus th:value="${username}">
+            </label>
+            <label>
+                密码
+                <input name="password" type="password" autocomplete="new-password" minlength="6" required>
+            </label>
+            <label>
+                确认密码
+                <input name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required>
+            </label>
+            <button type="submit">注册账户</button>
+        </form>
+        <p class="login-hint">已有账号？<a th:href="@{/login}">返回登录</a></p>
+    </section>
+</main>
+</body>
+</html>

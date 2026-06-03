@@ -1,0 +1,38 @@
+# Build output
+target/
+out/
+build/
+
+# IDE / editor local files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Runtime logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+*.pid
+*.class
+hs_err_pid*
+replay_pid*
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Tool-generated local metadata
+.gitnexus/
+.agents/
+.claude/
+AGENTS.md
+CLAUDE.md
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -52,6 +52,7 @@ public class AuthController {
         try {
             userService.register(username, password, confirmPassword);
             redirectAttributes.addFlashAttribute("message", "注册成功，请登录");
+            redirectAttributes.addFlashAttribute("username", username == null ? "" : username.trim());
             return "redirect:/login";
         } catch (IllegalArgumentException exception) {
             model.addAttribute("error", exception.getMessage());

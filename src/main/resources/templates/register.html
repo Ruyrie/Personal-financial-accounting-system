@@ -23,7 +23,7 @@
         <form class="login-form" th:action="@{/register}" method="post">
             <label>
                 用户名
-                <input name="username" autocomplete="username" required autofocus th:value="${username}">
+                <input name="username" autocomplete="username" minlength="3" maxlength="30" required autofocus th:value="${username}">
             </label>
             <label>
                 密码

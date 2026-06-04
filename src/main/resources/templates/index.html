@@ -22,17 +22,17 @@
         <div class="profile-menu" data-profile-menu>
             <button class="avatar-trigger" type="button" data-profile-trigger aria-label="个人中心">
                 <img th:if="${currentUser != null && currentUser.avatarData != null}" th:src="${currentUser.avatarData}" alt="头像">
-                <img th:if="${currentUser == null || currentUser.avatarData == null}" th:src="@{/images/morentouxiangpng.png}" alt="默认头像">
+                <img th:if="${currentUser == null || currentUser.avatarData == null}" th:src="@{/images/morentouxiang.png}" alt="默认头像">
             </button>
             <div class="profile-panel" data-profile-panel>
                 <div class="profile-id">
                     <span class="profile-id-avatar">
                         <img th:if="${currentUser != null && currentUser.avatarData != null}" th:src="${currentUser.avatarData}" alt="头像">
-                        <img th:if="${currentUser == null || currentUser.avatarData == null}" th:src="@{/images/morentouxiangpng.png}" alt="默认头像">
+                        <img th:if="${currentUser == null || currentUser.avatarData == null}" th:src="@{/images/morentouxiang.png}" alt="默认头像">
                     </span>
                     <div class="profile-id-meta">
-                        <strong th:text="${currentUser != null ? currentUser.username : '个人中心'}">个人中心</strong>
-                        <span>个人账户</span>
+                        <strong th:text="${currentUser != null ? currentUser.username : '个人中心'}"
+                                th:title="${currentUser != null ? currentUser.username : '个人中心'}">个人中心</strong>
                     </div>
                 </div>
                 <form class="profile-action-form" th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data">
@@ -42,6 +42,10 @@
                         <input name="avatar" type="file" accept="image/png,image/jpeg,image/webp" onchange="this.form.submit()">
                     </label>
                 </form>
+                <button class="profile-action" type="button" data-open-password-modal>
+                    <span class="profile-action-icon" aria-hidden="true">✎</span>
+                    <span class="profile-action-text">修改密码</span>
+                </button>
                 <a class="profile-action" th:href="@{/transactions/export}" th:data-export-base="@{/transactions/export}" data-export-trigger>
                     <span class="profile-action-icon" aria-hidden="true">↧</span>
                     <span class="profile-action-text">导出excel数据</span>
@@ -58,6 +62,9 @@
 </header>
 
 <main class="container">
+    <div class="toast" th:if="${message}" th:text="${message}">操作成功</div>
+    <div class="toast error" th:if="${error}" th:text="${error}">操作失败</div>
+
     <section class="page-head">
         <div>
             <h1>财务总览</h1>
@@ -215,6 +222,7 @@
 </main>
 <script th:src="@{/webjars/chart.js/4.4.7/dist/chart.umd.js}"></script>
 <script th:src="@{/js/export-modal.js(v=1)}"></script>
+<script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script th:inline="javascript">
     (() => {
         let financeCategoryChart;

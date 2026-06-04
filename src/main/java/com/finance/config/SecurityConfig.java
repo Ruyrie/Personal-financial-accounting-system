@@ -22,9 +22,16 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")
+                        .rememberMeCookieName("finance-remember-me")
+                        .tokenValiditySeconds(60 * 60 * 24 * 14)
+                        .key("personal-finance-remember-me")
+                )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
+                        .deleteCookies("JSESSIONID", "finance-remember-me")
                 )
                 .build();
     }

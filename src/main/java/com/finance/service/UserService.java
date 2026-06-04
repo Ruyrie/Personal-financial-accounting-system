@@ -64,6 +64,15 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public void changePassword(String password, String confirmPassword) {
+        AppUser user = currentUser();
+        validatePassword(password, confirmPassword);
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("新密码不能和旧密码相同");
+        }
+        userDao.updatePasswordByUsername(user.getUsername(), passwordEncoder.encode(password));
+    }
+
     public Long currentUserId() {
         return currentUser().getId();
     }

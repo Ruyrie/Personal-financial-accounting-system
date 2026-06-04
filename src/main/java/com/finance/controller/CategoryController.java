@@ -40,8 +40,18 @@ public class CategoryController {
 
     @PostMapping("/categories/{id}/delete")
     public String deletePage(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        categoryService.delete(id);
-        redirectAttributes.addFlashAttribute("message", "分类已删除");
+        try {
+            categoryService.delete(id);
+            redirectAttributes.addFlashAttribute("message", "分类已删除");
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("error", exception.getMessage());
+        }
+        return "redirect:/categories";
+    }
+
+    @GetMapping("/categories/{id}/delete")
+    public String deletePageFallback(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", "请在分类管理页面确认删除分类");
         return "redirect:/categories";
     }
 

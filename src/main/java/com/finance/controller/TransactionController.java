@@ -48,11 +48,21 @@ public class TransactionController {
     @GetMapping("/transactions/export")
     public void export(@ModelAttribute TransactionFilter filter, HttpServletResponse response) throws IOException {
         byte[] bytes = transactionService.exportExcel(filter);
-        String filename = URLEncoder.encode("收支记录.xlsx", StandardCharsets.UTF_8).replace("+", "%20");
+        String filename = URLEncoder.encode(exportFilename(filter), StandardCharsets.UTF_8).replace("+", "%20");
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
         response.setContentLength(bytes.length);
         response.getOutputStream().write(bytes);
+    }
+
+    private String exportFilename(TransactionFilter filter) {
+        if (Integer.valueOf(1).equals(filter.getType())) {
+            return "收入情况.xlsx";
+        }
+        if (Integer.valueOf(2).equals(filter.getType())) {
+            return "支出情况.xlsx";
+        }
+        return "总体收支情况.xlsx";
     }
 
     @GetMapping("/transactions/new")

@@ -60,7 +60,7 @@ public class TransactionService {
     public byte[] exportExcel(TransactionFilter filter) {
         List<Transaction> transactions = transactionDao.findForExport(userService.currentUserId(), filter);
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            Sheet sheet = workbook.createSheet("收支记录");
+            Sheet sheet = workbook.createSheet(exportSheetName(filter));
             String[] headers = {"日期", "类型", "分类", "金额", "备注", "创建时间"};
             CellStyle headerStyle = createHeaderStyle(workbook);
             CellStyle bodyStyle = createBodyStyle(workbook);
@@ -117,6 +117,10 @@ public class TransactionService {
         return transactionDao.expenseStatsByCategory(userService.currentUserId(), month);
     }
 
+    public List<CategoryStats> incomeStatsByCategory(YearMonth month) {
+        return transactionDao.incomeStatsByCategory(userService.currentUserId(), month);
+    }
+
     private CellStyle createHeaderStyle(Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
         style.setFillForegroundColor(IndexedColors.PALE_BLUE.getIndex());
@@ -127,6 +131,16 @@ public class TransactionService {
         font.setBold(true);
         style.setFont(font);
         return style;
+    }
+
+    private String exportSheetName(TransactionFilter filter) {
+        if (Integer.valueOf(1).equals(filter.getType())) {
+            return "收入情况";
+        }
+        if (Integer.valueOf(2).equals(filter.getType())) {
+            return "支出情况";
+        }
+        return "总体收支";
     }
 
     private CellStyle createBodyStyle(Workbook workbook) {

@@ -19,4 +19,4 @@ server:
 app:
   security:
     username: ${APP_USERNAME:admin}
-    password: ${APP_PASSWORD:admin123}
+    password: ${APP_PASSWORD:123456}

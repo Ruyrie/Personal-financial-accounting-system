@@ -24,6 +24,7 @@ public class DashboardController {
         model.addAttribute("stats", transactionService.monthlyStats(selectedMonth));
         model.addAttribute("recentTransactions", transactionService.findRecent(5));
         model.addAttribute("categoryStats", transactionService.expenseStatsByCategory(selectedMonth));
+        model.addAttribute("incomeCategoryStats", transactionService.incomeStatsByCategory(selectedMonth));
         return "index";
     }
 }

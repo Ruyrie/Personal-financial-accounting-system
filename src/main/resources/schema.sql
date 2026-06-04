@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `transaction` (
 );
 
 INSERT INTO app_user (username, password)
-SELECT 'admin', '{noop}admin123'
+SELECT 'admin', '{noop}123456'
 WHERE NOT EXISTS (
     SELECT 1 FROM app_user WHERE username = 'admin'
 );

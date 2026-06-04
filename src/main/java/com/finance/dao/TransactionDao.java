@@ -152,13 +152,21 @@ public class TransactionDao {
     }
 
     public List<CategoryStats> expenseStatsByCategory(Long userId, YearMonth month) {
+        return statsByCategory(userId, month, 2);
+    }
+
+    public List<CategoryStats> incomeStatsByCategory(Long userId, YearMonth month) {
+        return statsByCategory(userId, month, 1);
+    }
+
+    private List<CategoryStats> statsByCategory(Long userId, YearMonth month, int type) {
         LocalDate start = month.atDay(1);
         LocalDate end = month.plusMonths(1).atDay(1);
         List<CategoryStats> raw = jdbcTemplate.query("""
                 SELECT c.id AS category_id, c.name AS category_name, SUM(t.amount) AS amount
                 FROM `transaction` t
                 JOIN category c ON c.id = t.category_id AND c.user_id = t.user_id
-                WHERE t.user_id = ? AND t.type = 2 AND t.record_date >= ? AND t.record_date < ?
+                WHERE t.user_id = ? AND t.type = ? AND t.record_date >= ? AND t.record_date < ?
                 GROUP BY c.id, c.name
                 ORDER BY amount DESC
                 """, (rs, rowNum) -> new CategoryStats(
@@ -166,7 +174,7 @@ public class TransactionDao {
                 rs.getString("category_name"),
                 rs.getBigDecimal("amount"),
                 BigDecimal.ZERO
-        ), userId, Date.valueOf(start), Date.valueOf(end));
+        ), userId, type, Date.valueOf(start), Date.valueOf(end));
 
         BigDecimal total = raw.stream()
                 .map(CategoryStats::amount)

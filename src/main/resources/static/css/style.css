@@ -1526,8 +1526,8 @@ button:active,
     padding: 14px;
     border-radius: 999px;
     background:
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92) 0 34%, transparent 35%),
-        radial-gradient(circle at 42% 28%, rgba(255, 255, 255, 0.92), transparent 34%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.92) 34%, transparent 35%),
+        radial-gradient(circle at 42% 28%, rgba(255, 255, 255, 0.92) 0%, transparent 34%),
         linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(232, 243, 255, 0.34));
     box-shadow:
         0 26px 64px rgba(46, 80, 130, 0.16),
@@ -1795,7 +1795,7 @@ button:active,
     flex: 0 0 18px;
     border-radius: 5px;
     box-shadow: none;
-    accent-color: var(--primary);
+    accent-color: var(--brand);
 }
 
 .login-form button {

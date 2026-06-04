@@ -401,10 +401,38 @@
             const label = document.querySelector(`[data-date-label="${name}"]`);
             const title = document.querySelector(`[data-date-title="${name}"]`);
             const grid = document.querySelector(`[data-date-grid="${name}"]`);
+            const menu = document.querySelector(`[data-date-menu="${name}"]`);
+            const field = trigger.closest('.filter-field');
             const today = new Date();
             let visibleDate = input.value ? new Date(`${input.value}T00:00:00`) : today;
             let dateYear = visibleDate.getFullYear();
             let dateMonth = visibleDate.getMonth();
+            let openedModal = false;
+
+            const backdrop = document.createElement('div');
+            backdrop.className = 'date-modal-backdrop';
+            backdrop.hidden = true;
+            document.body.appendChild(backdrop);
+
+            const openPicker = () => {
+                closeMenus();
+                openedModal = document.body.classList.contains('modal-open');
+                backdrop.appendChild(menu);
+                backdrop.hidden = false;
+                document.body.classList.add('modal-open');
+                render();
+            };
+
+            const closePicker = () => {
+                if (backdrop.hidden) {
+                    return;
+                }
+                backdrop.hidden = true;
+                field.appendChild(menu);
+                if (!openedModal) {
+                    document.body.classList.remove('modal-open');
+                }
+            };
 
             const render = () => {
                 label.textContent = formatDateText(input.value);
@@ -426,17 +454,24 @@
                         input.value = value;
                         input.dispatchEvent(new Event('change', { bubbles: true }));
                         render();
-                        closeMenus();
+                        closePicker();
                     });
                     grid.appendChild(button);
                 });
             };
 
-            trigger.addEventListener('click', () => {
-                const field = trigger.closest('.filter-field');
-                const wasOpen = field.classList.contains('is-open');
-                closeMenus();
-                field.classList.toggle('is-open', !wasOpen);
+            trigger.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (backdrop.hidden) {
+                    openPicker();
+                } else {
+                    closePicker();
+                }
+            });
+            backdrop.addEventListener('click', (event) => {
+                if (event.target === backdrop) {
+                    closePicker();
+                }
             });
             document.querySelector(`[data-date-prev="${name}"]`).addEventListener('click', () => {
                 dateMonth -= 1;
@@ -459,7 +494,7 @@
                 dateYear = today.getFullYear();
                 dateMonth = today.getMonth();
                 render();
-                closeMenus();
+                closePicker();
             });
             input.addEventListener('change', () => {
                 if (input.value) {
@@ -468,6 +503,11 @@
                     dateMonth = picked.getMonth();
                 }
                 render();
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closePicker();
+                }
             });
             render();
         };

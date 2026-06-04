@@ -77,7 +77,7 @@
 
     <div class="record-layout">
     <form class="form-panel" method="post"
-          th:action="${mode == 'create'} ? @{/transactions} : @{/transactions/{id}(id=${transaction.id})}"
+          th:action="${mode == 'create' ? '/transactions' : '/transactions/' + transaction.id}"
           th:object="${transaction}">
         <label>
             类型

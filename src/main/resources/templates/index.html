@@ -483,7 +483,10 @@
         });
         document.querySelector('[data-year-current]').addEventListener('click', () => {
             visibleYear = now.getFullYear();
+            nativeMonth.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             renderMonths();
+            closeMenus();
+            monthForm.submit();
         });
         document.addEventListener('click', (event) => {
             if (!event.target.closest('.filter-field')) {

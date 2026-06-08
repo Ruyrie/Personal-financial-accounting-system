@@ -130,13 +130,17 @@
                 </div>
                 <div class="month-grid" data-month-grid></div>
                 <div class="month-actions">
-                    <button type="button" data-year-current>返回今年</button>
+                    <button type="button" data-month-clear>清除</button>
+                    <button type="button" data-year-current>返回本月</button>
                 </div>
             </div>
         </div>
 
         <input type="search" name="keyword" placeholder="搜索分类或备注" th:value="${filter.keyword}">
-        <button type="submit">搜索</button>
+        <div class="filter-actions">
+            <button type="submit">搜索</button>
+            <a class="button secondary" th:href="@{/transactions}">重置</a>
+        </div>
     </form>
 
     <template id="nativeFilterFallback">
@@ -154,6 +158,7 @@
         <input type="month" name="month" th:value="${filter.month}">
         <input type="search" name="keyword" placeholder="搜索分类或备注" th:value="${filter.keyword}">
         <button type="submit">搜索</button>
+        <a class="button secondary" th:href="@{/transactions}">重置</a>
     </template>
 
     <div class="empty" th:if="${#lists.isEmpty(page.items())}">暂无符合条件的记录</div>
@@ -596,6 +601,12 @@
 
         document.querySelector('[data-year-current]').addEventListener('click', () => {
             visibleYear = now.getFullYear();
+            nativeMonth.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            renderMonths();
+        });
+
+        document.querySelector('[data-month-clear]').addEventListener('click', () => {
+            nativeMonth.value = '';
             renderMonths();
         });
 

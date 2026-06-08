@@ -1296,10 +1296,24 @@ body[data-transaction-type="2"] [data-dropdown-menu="categoryId"] button[data-ca
 .month-actions {
     padding-top: 10px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .month-actions button {
     min-width: 118px;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+}
+
+.filter-actions button,
+.filter-actions .button {
+    min-height: 50px;
 }
 
 .inline-form {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${mode == 'create' ? '新增记录' : '编辑记录'}">记一笔</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=5)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=11)}">
 </head>
 <body th:data-transaction-type="${transaction.type ?: 2}">
 <header class="topbar">
@@ -178,7 +178,7 @@
     </aside>
     </div>
 </main>
-<script th:src="@{/js/export-modal.js(v=1)}"></script>
+<script th:src="@{/js/export-modal.js(v=6)}"></script>
 <script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script>
     (() => {

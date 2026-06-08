@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>收支记录</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=5)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=11)}">
 </head>
 <body>
 <header class="topbar">
@@ -130,8 +130,7 @@
                 </div>
                 <div class="month-grid" data-month-grid></div>
                 <div class="month-actions">
-                    <button type="button" data-month-clear>清除</button>
-                    <button type="button" data-month-current>本月</button>
+                    <button type="button" data-year-current>返回今年</button>
                 </div>
             </div>
         </div>
@@ -289,7 +288,7 @@
         </section>
     </div>
 </main>
-<script th:src="@{/js/export-modal.js(v=1)}"></script>
+<script th:src="@{/js/export-modal.js(v=6)}"></script>
 <script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script>
     (() => {
@@ -347,6 +346,7 @@
             categoryMenu.querySelectorAll('button[data-category-type]').forEach((button) => {
                 const visible = !typeValue || button.dataset.categoryType === typeValue;
                 button.classList.toggle('is-filtered-out', !visible);
+                button.disabled = !visible;
             });
             if (!selectedVisible) {
                 categorySelect.value = emptyValue;
@@ -358,10 +358,26 @@
             const typeSelect = document.querySelector(`[data-native-select="${typeName}"]`);
             const categorySelect = document.querySelector(`[data-native-select="${categoryName}"]`);
             const categoryMenu = document.querySelector(`[data-dropdown-menu="${categoryName}"]`);
+            const categoryLabel = document.querySelector(`[data-dropdown-label="${categoryName}"]`);
             if (!typeSelect || !categorySelect || !categoryMenu) {
                 return;
             }
             const apply = () => filterCategoryOptions(typeSelect.value, categorySelect, categoryMenu, emptyValue);
+            categorySelect.addEventListener('change', () => {
+                const selectedOption = categorySelect.selectedOptions[0];
+                if (categoryLabel && selectedOption) {
+                    categoryLabel.textContent = selectedOption.textContent;
+                }
+            });
+            categoryMenu.querySelectorAll('button[data-value]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    if (button.disabled || button.classList.contains('is-filtered-out')) {
+                        return;
+                    }
+                    categorySelect.value = button.dataset.value;
+                    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            });
             typeSelect.addEventListener('change', apply);
             apply();
         };
@@ -578,17 +594,9 @@
             renderMonths();
         });
 
-        document.querySelector('[data-month-clear]').addEventListener('click', () => {
-            nativeMonth.value = '';
-            renderMonths();
-            closeMenus();
-        });
-
-        document.querySelector('[data-month-current]').addEventListener('click', () => {
+        document.querySelector('[data-year-current]').addEventListener('click', () => {
             visibleYear = now.getFullYear();
-            nativeMonth.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             renderMonths();
-            closeMenus();
         });
 
         document.querySelectorAll('[data-edit-transaction]').forEach((button) => {

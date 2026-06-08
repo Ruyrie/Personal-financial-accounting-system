@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>财务总览 - 个人理财记账系统</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=5)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=11)}">
 </head>
 <body>
 <header class="topbar">
@@ -85,8 +85,7 @@
                     </div>
                     <div class="month-grid" data-month-grid></div>
                     <div class="month-actions">
-                        <button type="button" data-month-clear>清除</button>
-                        <button type="button" data-month-current>本月</button>
+                        <button type="button" data-year-current>返回今年</button>
                     </div>
                 </div>
             </div>
@@ -221,7 +220,7 @@
     </section>
 </main>
 <script th:src="@{/webjars/chart.js/4.4.7/dist/chart.umd.js}"></script>
-<script th:src="@{/js/export-modal.js(v=1)}"></script>
+<script th:src="@{/js/export-modal.js(v=6)}"></script>
 <script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script th:inline="javascript">
     (() => {
@@ -230,7 +229,31 @@
         const labels = /*[[${categoryStats.![categoryName()]}]]*/ [];
         const amounts = /*[[${categoryStats.![amount()]}]]*/ [];
         const values = amounts.map(Number);
-        const colors = ['#3f7ee8', '#29c76f', '#f6a21a', '#f46d56', '#8b5cf6', '#16b8c7'];
+        const baseCategoryColors = [
+            { solid: '#3f7ee8', shadow: 'rgba(63, 126, 232, 0.14)' },
+            { solid: '#29c76f', shadow: 'rgba(41, 199, 111, 0.14)' },
+            { solid: '#f6a21a', shadow: 'rgba(246, 162, 26, 0.16)' },
+            { solid: '#f46d56', shadow: 'rgba(244, 109, 86, 0.16)' },
+            { solid: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.14)' },
+            { solid: '#16b8c7', shadow: 'rgba(22, 184, 199, 0.14)' }
+        ];
+        const colorForIndex = (index) => {
+            if (baseCategoryColors[index]) {
+                return baseCategoryColors[index];
+            }
+            const hue = (210 + index * 137.508) % 360;
+            const saturation = 68 + (index % 4) * 4;
+            const lightness = 48 + (index % 3) * 5;
+            return {
+                solid: `hsl(${hue.toFixed(1)}, ${saturation}%, ${lightness}%)`,
+                shadow: `hsla(${hue.toFixed(1)}, ${saturation}%, ${lightness}%, 0.16)`
+            };
+        };
+        const categoryColors = Array.from(
+            { length: Math.max(labels.length, values.length) },
+            (_, index) => colorForIndex(index)
+        );
+        const colors = categoryColors.map((color) => color.solid);
         const overviewIncome = Number(/*[[${stats.income()}]]*/ 0);
         const overviewExpense = Number(/*[[${stats.expense()}]]*/ 0);
         const formatCurrency = (value) => `¥${Number(value || 0).toLocaleString('zh-CN', {
@@ -255,6 +278,13 @@
                 center.span.textContent = center.label;
                 center.strong.textContent = center.value;
             }
+        };
+        const syncLegendColors = () => {
+            document.querySelectorAll('.legend li').forEach((item, index) => {
+                const color = categoryColors[index] || colorForIndex(index);
+                item.style.setProperty('--legend-color', color.solid);
+                item.style.setProperty('--legend-shadow', color.shadow);
+            });
         };
 
         const initCategoryChart = () => {
@@ -320,7 +350,7 @@
                     ctx.moveTo(chart.width / 2, chart.height / 2);
                     ctx.arc(chart.width / 2, chart.height / 2, Math.min(chart.width, chart.height) / 2 - 10, start, start + angle);
                     ctx.closePath();
-                    ctx.fillStyle = colors[index % colors.length];
+                    ctx.fillStyle = colors[index] || colorForIndex(index).solid;
                     ctx.fill();
                     start += angle;
                 });
@@ -384,6 +414,7 @@
             });
         };
 
+        syncLegendColors();
         initCategoryChart();
         initOverviewChart();
         window.addEventListener('pageshow', (event) => {
@@ -450,18 +481,9 @@
             visibleYear += 1;
             renderMonths();
         });
-        document.querySelector('[data-month-clear]').addEventListener('click', () => {
-            nativeMonth.value = '';
-            renderMonths();
-            closeMenus();
-            monthForm.submit();
-        });
-        document.querySelector('[data-month-current]').addEventListener('click', () => {
+        document.querySelector('[data-year-current]').addEventListener('click', () => {
             visibleYear = now.getFullYear();
-            nativeMonth.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             renderMonths();
-            closeMenus();
-            monthForm.submit();
         });
         document.addEventListener('click', (event) => {
             if (!event.target.closest('.filter-field')) {

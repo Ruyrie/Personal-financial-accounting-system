@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>分类管理</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=5)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=11)}">
 </head>
 <body>
 <header class="topbar">
@@ -73,7 +73,7 @@
     <div class="toast" th:if="${message}" th:text="${message}">已保存</div>
     <div class="toast error" th:if="${error}" th:text="${error}">操作失败</div>
 
-    <section class="category-list-panel" aria-label="分类列表">
+    <section class="category-list-panel" aria-label="分类列表" th:data-active-type="${activeType}">
         <div class="category-toolbar">
             <div>
                 <h2 data-category-title>收入分类</h2>
@@ -114,7 +114,7 @@
                         th:data-sort="${item.sortOrder}">
                     编辑
                 </button>
-                <form th:action="@{/categories/{id}/delete(id=${item.id})}" method="post" data-delete-category>
+                <form th:action="@{/categories/{id}/delete(id=${item.id},type=${item.type})}" method="post" data-delete-category>
                     <button class="link-danger" type="submit"
                             th:data-category-name="${item.name}"
                             th:data-category-kind="${item.type == 1 ? '收入' : '支出'}">删除</button>
@@ -191,7 +191,7 @@
         </section>
     </div>
 </main>
-<script th:src="@{/js/export-modal.js(v=1)}"></script>
+<script th:src="@{/js/export-modal.js(v=6)}"></script>
 <script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script>
     (() => {
@@ -205,6 +205,8 @@
             icon: document.querySelector('[data-category-icon]'),
             sort: document.querySelector('[data-category-sort]')
         };
+        const categoryPanel = document.querySelector('[data-active-type]');
+        const initialCategoryType = categoryPanel?.dataset.activeType === '2' ? '2' : '1';
         const categoryRows = Array.from(document.querySelectorAll('[data-category-type]'));
         const categoryTabs = Array.from(document.querySelectorAll('[data-category-filter]'));
         const categoryTitle = document.querySelector('[data-category-title]');
@@ -360,7 +362,7 @@
             event.stopPropagation();
             profileMenu.classList.toggle('is-open');
         });
-        renderCategoryType('1');
+        renderCategoryType(initialCategoryType);
     })();
 </script>
 </body>

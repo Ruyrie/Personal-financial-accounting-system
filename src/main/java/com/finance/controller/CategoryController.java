@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -25,9 +26,11 @@ public class CategoryController {
     }
 
     @GetMapping("/categories")
-    public String list(Model model) {
+    public String list(@RequestParam(defaultValue = "1") Integer type, Model model) {
+        int activeType = Integer.valueOf(2).equals(type) ? 2 : 1;
         model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("category", new Category());
+        model.addAttribute("activeType", activeType);
         return "category/list";
     }
 
@@ -39,14 +42,19 @@ public class CategoryController {
     }
 
     @PostMapping("/categories/{id}/delete")
-    public String deletePage(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deletePage(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "1") Integer type,
+            RedirectAttributes redirectAttributes
+    ) {
+        int activeType = Integer.valueOf(2).equals(type) ? 2 : 1;
         try {
             categoryService.delete(id);
             redirectAttributes.addFlashAttribute("message", "分类已删除");
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("error", exception.getMessage());
         }
-        return "redirect:/categories";
+        return "redirect:/categories?type=" + activeType;
     }
 
     @GetMapping("/categories/{id}/delete")

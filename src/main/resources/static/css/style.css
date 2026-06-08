@@ -1242,12 +1242,14 @@ body[data-transaction-type="2"] [data-dropdown-menu="categoryId"] button[data-ca
 }
 
 [data-year-prev]::after,
-[data-date-prev]::after {
+[data-date-prev]::after,
+[data-export-year-prev]::after {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 4l-4 4 4 4' fill='none' stroke='%232f6fe0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 [data-year-next]::after,
-[data-date-next]::after {
+[data-date-next]::after,
+[data-export-year-next]::after {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 4l4 4-4 4' fill='none' stroke='%232f6fe0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
@@ -1293,6 +1295,11 @@ body[data-transaction-type="2"] [data-dropdown-menu="categoryId"] button[data-ca
 
 .month-actions {
     padding-top: 10px;
+    justify-content: center;
+}
+
+.month-actions button {
+    min-width: 118px;
 }
 
 .inline-form {
@@ -1591,6 +1598,8 @@ button:active,
 }
 
 .legend li {
+    --legend-color: #3b82f6;
+    --legend-shadow: rgba(59, 130, 246, 0.1);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -1629,7 +1638,7 @@ button:active,
     height: 100%;
     min-width: 6px;
     border-radius: 999px;
-    background: #3b82f6;
+    background: var(--legend-color);
     transition: width 0.5s ease;
 }
 
@@ -1640,41 +1649,9 @@ button:active,
     width: 12px;
     height: 12px;
     border-radius: 999px;
-    background: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    background: var(--legend-color);
+    box-shadow: 0 0 0 4px var(--legend-shadow);
     content: "";
-}
-
-.legend li:nth-child(1) .legend-bar i { background: #3b82f6; }
-.legend li:nth-child(2) .legend-bar i { background: #22c55e; }
-.legend li:nth-child(3) .legend-bar i { background: #f59e0b; }
-.legend li:nth-child(4) .legend-bar i { background: #f06449; }
-.legend li:nth-child(5) .legend-bar i { background: #8b5cf6; }
-.legend li:nth-child(6) .legend-bar i { background: #06b6d4; }
-
-.legend li:nth-child(2)::before {
-    background: #22c55e;
-    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-}
-
-.legend li:nth-child(3)::before {
-    background: #f59e0b;
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
-}
-
-.legend li:nth-child(4)::before {
-    background: #f06449;
-    box-shadow: 0 0 0 4px rgba(240, 100, 73, 0.12);
-}
-
-.legend li:nth-child(5)::before {
-    background: #8b5cf6;
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
-}
-
-.legend li:nth-child(6)::before {
-    background: #06b6d4;
-    box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
 }
 
 .legend span {
@@ -2836,6 +2813,212 @@ textarea:focus {
     min-height: 42px;
 }
 
+.export-month-panel {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    border-radius: 18px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(246, 250, 255, 0.48)),
+        rgba(255, 255, 255, 0.46);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        0 12px 24px rgba(38, 57, 76, 0.07);
+}
+
+.export-month-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.export-month-head > div {
+    display: grid;
+    gap: 4px;
+}
+
+.export-month-head strong {
+    color: #162033;
+    font-size: 17px;
+    font-weight: 950;
+}
+
+.export-month-head div span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.export-all-months {
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 1px solid rgba(136, 156, 184, 0.32);
+    border-radius: 999px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(245, 249, 255, 0.62)),
+        rgba(255, 255, 255, 0.52);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 8px 18px rgba(38, 57, 76, 0.06);
+    color: #526178;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 900;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, color 0.16s ease, background 0.16s ease;
+}
+
+.export-all-months input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 1px;
+    padding: 0;
+    border: 0;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.export-toggle-track {
+    display: inline-flex;
+    align-items: center;
+    width: 42px;
+    height: 24px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(136, 156, 184, 0.26);
+    box-shadow: inset 0 1px 4px rgba(28, 40, 64, 0.12);
+    transition: background 0.16s ease;
+}
+
+.export-toggle-track span {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(28, 40, 64, 0.18);
+    transform: translateX(0);
+    transition: transform 0.16s ease;
+}
+
+.export-all-months.is-checked {
+    border-color: rgba(10, 132, 255, 0.36);
+    background:
+        linear-gradient(145deg, rgba(235, 246, 255, 0.92), rgba(255, 255, 255, 0.64)),
+        rgba(255, 255, 255, 0.58);
+    color: var(--brand-deep);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.92),
+        0 12px 24px rgba(10, 132, 255, 0.13);
+}
+
+.export-all-months.is-checked .export-toggle-track {
+    background: linear-gradient(135deg, #0a84ff, #0066cc);
+}
+
+.export-all-months.is-checked .export-toggle-track span {
+    transform: translateX(18px);
+}
+
+.export-month-field {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 850;
+}
+
+.export-month-field > span {
+    color: var(--muted);
+}
+
+.export-month-field input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid rgba(136, 156, 184, 0.38);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.74);
+    color: #172033;
+    font: inherit;
+    font-weight: 850;
+}
+
+.export-month-field input[type="hidden"] {
+    display: none;
+}
+
+.export-month-field .glass-select {
+    min-height: 58px;
+    border-radius: 18px;
+}
+
+.export-month-field.is-disabled {
+    opacity: 0.58;
+}
+
+.export-month-field.is-disabled .glass-select {
+    cursor: not-allowed;
+}
+
+.export-month-modal-backdrop {
+    z-index: 1500;
+    background: rgba(28, 40, 64, 0.18);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+.export-month-modal-backdrop .export-month-dialog {
+    position: static;
+    inset: auto;
+    width: min(440px, calc(100vw - 36px));
+    max-height: none;
+    padding: 14px;
+    overflow: visible;
+    border-radius: 22px;
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    box-shadow:
+        0 40px 90px rgba(28, 48, 84, 0.34),
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.export-month-dialog .month-grid {
+    gap: 8px;
+}
+
+.export-month-dialog .month-grid button {
+    min-height: 46px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.export-alert {
+    padding: 12px 14px;
+    border: 1px solid rgba(240, 100, 73, 0.24);
+    border-radius: 14px;
+    background: rgba(255, 241, 239, 0.76);
+    color: var(--expense);
+    font-size: 14px;
+    font-weight: 850;
+    line-height: 1.5;
+}
+
+.export-alert[hidden] {
+    display: none;
+}
+
 .export-options {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2890,6 +3073,11 @@ textarea:focus {
     font-size: 15px;
     font-style: normal;
     font-weight: 750;
+}
+
+.export-option:disabled {
+    cursor: progress;
+    opacity: 0.68;
 }
 
 .income-option .export-option-icon {
@@ -3143,6 +3331,35 @@ textarea:focus {
     .category-row {
         padding: 14px;
         border-radius: 22px;
+    }
+
+    .export-month-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .export-month-modal-backdrop {
+        padding: 16px;
+    }
+
+    .export-month-modal-backdrop .export-month-dialog {
+        width: min(100%, 390px);
+        padding: 14px;
+        border-radius: 22px;
+    }
+
+    .export-month-dialog .month-grid {
+        gap: 8px;
+    }
+
+    .export-month-dialog .month-grid button {
+        min-height: 44px;
+        font-size: 15px;
+    }
+
+    .export-all-months {
+        justify-content: space-between;
+        width: 100%;
     }
 
     .category-actions,

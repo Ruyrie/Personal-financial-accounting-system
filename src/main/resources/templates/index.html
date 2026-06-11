@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- 财务总览页面：展示月度收入、支出、结余、分类占比图和最近收支记录。 -->
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -224,6 +225,7 @@
 <script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script th:inline="javascript">
     (() => {
+        // 财务总览页面脚本：负责 Chart.js 图表、图例颜色、月份筛选和个人菜单交互。
         let financeCategoryChart;
         let financeOverviewChart;
         const labels = /*[[${categoryStats.![categoryName()]}]]*/ [];
@@ -237,6 +239,7 @@
             { solid: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.14)' },
             { solid: '#16b8c7', shadow: 'rgba(22, 184, 199, 0.14)' }
         ];
+        // 为分类图表生成固定或派生颜色。
         const colorForIndex = (index) => {
             if (baseCategoryColors[index]) {
                 return baseCategoryColors[index];
@@ -256,11 +259,13 @@
         const colors = categoryColors.map((color) => color.solid);
         const overviewIncome = Number(/*[[${stats.income()}]]*/ 0);
         const overviewExpense = Number(/*[[${stats.expense()}]]*/ 0);
+        // 将数值格式化为人民币金额。
         const formatCurrency = (value) => `¥${Number(value || 0).toLocaleString('zh-CN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         })}`;
 
+        // 获取图表中间的标题和数值容器。
         const getCenter = (canvasId) => {
             const panel = document.getElementById(canvasId)?.closest('.chart-panel');
             const center = panel?.querySelector('.chart-center');
@@ -273,12 +278,14 @@
         };
         const catCenter = getCenter('categoryChart');
         const ovCenter = getCenter('overviewChart');
+        // 恢复图表中心文案为默认状态。
         const restoreCenter = (center) => {
             if (center) {
                 center.span.textContent = center.label;
                 center.strong.textContent = center.value;
             }
         };
+        // 将图例圆点颜色同步为图表分片颜色。
         const syncLegendColors = () => {
             document.querySelectorAll('.legend li').forEach((item, index) => {
                 const color = categoryColors[index] || colorForIndex(index);
@@ -287,6 +294,7 @@
             });
         };
 
+        // 初始化支出分类占比环形图；无数据时绘制空状态圆环。
         const initCategoryChart = () => {
             const chart = document.getElementById('categoryChart');
             if (chart && window.Chart) {
@@ -362,6 +370,7 @@
                 window.financeChartReady = labels.length > 0;
             }
         };
+        // 初始化收入/支出构成环形图。
         const initOverviewChart = () => {
             const chart = document.getElementById('overviewChart');
             if (!chart || !window.Chart) {
@@ -424,6 +433,7 @@
             }
         });
 
+        // 关闭所有月份筛选下拉菜单。
         const closeMenus = () => {
             document.querySelectorAll('.filter-field.is-open').forEach((field) => {
                 field.classList.remove('is-open');
@@ -438,6 +448,7 @@
         const now = new Date();
         let visibleYear = nativeMonth.value ? Number(nativeMonth.value.slice(0, 4)) : now.getFullYear();
 
+        // 将 yyyy-MM 月份值转换成“yyyy年MM月”展示文本。
         const monthText = (value) => {
             if (!value) {
                 return '选择月份';
@@ -446,6 +457,7 @@
             return `${year}年${month}月`;
         };
 
+        // 渲染月份选择器的 12 个月份按钮并同步选中态。
         const renderMonths = () => {
             yearLabel.textContent = visibleYear;
             monthLabel.textContent = monthText(nativeMonth.value);

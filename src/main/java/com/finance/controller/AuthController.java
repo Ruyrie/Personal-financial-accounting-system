@@ -19,6 +19,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.net.URI;
 
 @Controller
+/**
+ * 处理用户认证相关页面和资料操作，包括登录页、注册、找回密码、头像上传和修改密码。
+ */
 public class AuthController {
     private final UserService userService;
 
@@ -27,21 +30,33 @@ public class AuthController {
     }
 
     @GetMapping("/login")
+    /**
+     * 返回登录页面。
+     */
     public String login() {
         return "login";
     }
 
     @GetMapping("/register")
+    /**
+     * 返回注册页面。
+     */
     public String registerForm() {
         return "register";
     }
 
     @GetMapping("/forgot-password")
+    /**
+     * 返回找回密码页面。
+     */
     public String forgotPasswordForm() {
         return "forgot-password";
     }
 
     @PostMapping("/register")
+    /**
+     * 提交注册表单，注册成功后跳转登录页，失败时回显错误信息。
+     */
     public String register(
             @RequestParam String username,
             @RequestParam String password,
@@ -62,6 +77,9 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
+    /**
+     * 根据用户名重置密码，成功后提示用户使用新密码登录。
+     */
     public String resetPassword(
             @RequestParam String username,
             @RequestParam String password,
@@ -81,6 +99,9 @@ public class AuthController {
     }
 
     @PostMapping("/profile/avatar")
+    /**
+     * 更新当前用户头像，并把头像校验结果通过 flash message 返回页面。
+     */
     public String updateAvatar(@RequestParam("avatar") MultipartFile avatar, RedirectAttributes redirectAttributes) {
         try {
             userService.updateAvatar(avatar);
@@ -92,6 +113,9 @@ public class AuthController {
     }
 
     @PostMapping("/profile/password")
+    /**
+     * 修改当前用户密码；修改成功后主动退出当前会话，要求用户重新登录。
+     */
     public String changePassword(
             @RequestParam String password,
             @RequestParam String confirmPassword,
@@ -110,6 +134,9 @@ public class AuthController {
         return "redirect:" + redirectPath(referer);
     }
 
+    /**
+     * 清理 Spring Security 会话和 remember-me Cookie。
+     */
     private void logoutCurrentSession(HttpServletRequest request, HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         new SecurityContextLogoutHandler().logout(request, response, authentication);
@@ -120,6 +147,9 @@ public class AuthController {
         response.addCookie(rememberCookie);
     }
 
+    /**
+     * 将 Referer 转换为站内重定向路径，避免把用户重定向到外部地址。
+     */
     private String redirectPath(String referer) {
         if (referer == null || referer.isBlank()) {
             return "/";

@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- 新增/编辑收支记录页面：填写类型、分类、金额、日期、备注并实时预览。 -->
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -182,12 +183,15 @@
 <script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script>
     (() => {
+        // 记一笔/编辑记录页面脚本：负责日期选择、下拉同步、分类联动和实时预览。
+        // 关闭当前页面中的自定义下拉菜单。
         const closeMenus = () => {
             document.querySelectorAll('.filter-field.is-open').forEach((field) => {
                 field.classList.remove('is-open');
             });
         };
 
+        // 将 yyyy-MM-dd 日期值转换成页面显示的 yyyy/MM/dd。
         const formatDateText = (value) => {
             if (!value) {
                 return '选择日期';
@@ -196,6 +200,7 @@
             return `${year}/${month}/${day}`;
         };
 
+        // 初始化指定字段的日期选择器。
         const initDatePicker = (name) => {
             const input = document.querySelector(`[data-native-date="${name}"]`);
             const trigger = document.querySelector(`[data-date-trigger="${name}"]`);
@@ -214,6 +219,7 @@
             backdrop.hidden = true;
             document.body.appendChild(backdrop);
 
+            // 打开日期选择器，并将菜单移动到全屏遮罩中。
             const openPicker = () => {
                 closeMenus();
                 backdrop.appendChild(menu);
@@ -221,6 +227,7 @@
                 document.body.classList.add('modal-open');
                 render();
             };
+            // 关闭日期选择器，并把菜单放回原来的表单字段中。
             const closePicker = () => {
                 if (backdrop.hidden) {
                     return;
@@ -230,6 +237,7 @@
                 document.body.classList.remove('modal-open');
             };
 
+            // 渲染当前月份的 6 周日期网格并同步选中态。
             const render = () => {
                 label.textContent = formatDateText(input.value);
                 title.textContent = `${visibleYear}年${String(visibleMonth + 1).padStart(2, '0')}月`;
@@ -305,6 +313,7 @@
             const label = document.querySelector(`[data-dropdown-label="${name}"]`);
             const menu = document.querySelector(`[data-dropdown-menu="${name}"]`);
             const trigger = document.querySelector(`[data-dropdown-trigger="${name}"]`);
+            // 将原生 select 的选中项同步到自定义下拉展示。
             const syncLabel = () => {
                 label.textContent = select.selectedOptions[0]?.textContent?.trim() || '请选择';
                 menu.querySelectorAll('button').forEach((button) => {
@@ -360,6 +369,7 @@
             maximumFractionDigits: 2
         })}`;
 
+        // 根据当前收支类型过滤可选分类，避免收入/支出分类混用。
         const updateCategoryOptions = () => {
             if (!typeSelect || !categorySelect || !categoryMenu) {
                 return;
@@ -389,6 +399,7 @@
             }
         };
 
+        // 根据表单当前输入实时刷新右侧预览卡片。
         const updatePreview = () => {
             if (!previewAmount) {
                 return;

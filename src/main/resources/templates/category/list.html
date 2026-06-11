@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- 分类管理页面：维护收入和支出分类，支持新增、编辑、删除和类型切换。 -->
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -195,6 +196,7 @@
 <script th:src="@{/js/profile-password-modal.js(v=1)}"></script>
 <script>
     (() => {
+        // 分类管理页面脚本：负责分类弹窗、类型标签切换、自定义下拉和删除确认。
         const modal = document.querySelector('[data-category-modal]');
         const form = document.querySelector('[data-category-form]');
         const title = document.getElementById('category-modal-title');
@@ -216,6 +218,7 @@
         const deleteSummary = document.querySelector('[data-delete-category-summary]');
         let pendingDeleteForm = null;
 
+        // 关闭所有自定义下拉菜单。
         const closeMenus = () => {
             document.querySelectorAll('.filter-field.is-open').forEach((field) => {
                 field.classList.remove('is-open');
@@ -227,6 +230,7 @@
             const label = document.querySelector(`[data-dropdown-label="${name}"]`);
             const menu = document.querySelector(`[data-dropdown-menu="${name}"]`);
             const trigger = document.querySelector(`[data-dropdown-trigger="${name}"]`);
+            // 将原生 select 当前值同步到自定义下拉按钮和选中态。
             const syncLabel = () => {
                 label.textContent = select.selectedOptions[0]?.textContent?.trim() || '请选择';
                 menu.querySelectorAll('button').forEach((button) => {
@@ -251,6 +255,7 @@
             syncLabel();
         });
 
+        // 根据收入/支出类型切换分类列表、计数和空状态提示。
         const renderCategoryType = (type) => {
             const label = type === '1' ? '收入' : '支出';
             let visibleCount = 0;
@@ -274,6 +279,7 @@
             button.addEventListener('click', () => renderCategoryType(button.dataset.categoryFilter));
         });
 
+        // 打开新增或编辑分类弹窗，并回填表单字段。
         const openModal = (category = {}) => {
             title.textContent = category.id ? '编辑分类' : '新建分类';
             fields.id.value = category.id || '';
@@ -287,6 +293,7 @@
             window.requestAnimationFrame(() => fields.name.focus());
         };
 
+        // 关闭分类编辑弹窗并重置表单。
         const closeModal = () => {
             modal.hidden = true;
             form.reset();
@@ -305,11 +312,13 @@
                 closeModal();
             }
         });
+        // 关闭删除确认弹窗，并清空待提交的删除表单。
         const closeDeleteModal = () => {
             deleteModal.hidden = true;
             pendingDeleteForm = null;
             document.body.classList.remove('modal-open');
         };
+        // 打开删除确认弹窗，暂存实际要提交的删除表单。
         const openDeleteModal = (formElement, trigger) => {
             pendingDeleteForm = formElement;
             const kind = trigger.dataset.categoryKind || '收支';

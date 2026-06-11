@@ -27,6 +27,9 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 
 @Controller
+/**
+ * 收支记录控制器，处理列表筛选、导出、新增、编辑、删除以及对应 API。
+ */
 public class TransactionController {
     private final TransactionService transactionService;
     private final CategoryService categoryService;
@@ -37,6 +40,9 @@ public class TransactionController {
     }
 
     @GetMapping("/transactions")
+    /**
+     * 渲染收支记录列表页，并加载分页结果、筛选条件和分类选项。
+     */
     public String list(@ModelAttribute TransactionFilter filter, Model model) {
         PageResult<Transaction> page = transactionService.findPage(filter);
         model.addAttribute("page", page);
@@ -46,6 +52,9 @@ public class TransactionController {
     }
 
     @GetMapping("/transactions/export")
+    /**
+     * 按当前筛选条件导出 Excel 文件。
+     */
     public void export(@ModelAttribute TransactionFilter filter, HttpServletResponse response) throws IOException {
         byte[] bytes = transactionService.exportExcel(filter);
         String filename = URLEncoder.encode(exportFilename(filter), StandardCharsets.UTF_8).replace("+", "%20");
@@ -55,6 +64,9 @@ public class TransactionController {
         response.getOutputStream().write(bytes);
     }
 
+    /**
+     * 根据导出类型生成中文文件名。
+     */
     private String exportFilename(TransactionFilter filter) {
         if (Integer.valueOf(1).equals(filter.getType())) {
             return "收入情况.xlsx";
@@ -66,6 +78,9 @@ public class TransactionController {
     }
 
     @GetMapping("/transactions/new")
+    /**
+     * 打开新增收支记录页面，默认类型为支出，日期为今天。
+     */
     public String newForm(Model model) {
         Transaction transaction = new Transaction();
         transaction.setType(2);
@@ -77,6 +92,9 @@ public class TransactionController {
     }
 
     @GetMapping("/transactions/{id}/edit")
+    /**
+     * 打开编辑页面并回显指定收支记录。
+     */
     public String editForm(@PathVariable Long id, Model model) {
         model.addAttribute("transaction", transactionService.findById(id));
         model.addAttribute("categories", categoryService.findAll());
@@ -85,6 +103,9 @@ public class TransactionController {
     }
 
     @PostMapping("/transactions")
+    /**
+     * 提交新增收支记录表单。
+     */
     public String create(@ModelAttribute Transaction transaction, RedirectAttributes redirectAttributes) {
         transactionService.save(transaction);
         redirectAttributes.addFlashAttribute("message", "收支记录已新增");
@@ -92,6 +113,9 @@ public class TransactionController {
     }
 
     @PostMapping("/transactions/{id}")
+    /**
+     * 提交编辑收支记录表单。
+     */
     public String update(@PathVariable Long id, @ModelAttribute Transaction transaction, RedirectAttributes redirectAttributes) {
         transaction.setId(id);
         transactionService.save(transaction);
@@ -100,6 +124,9 @@ public class TransactionController {
     }
 
     @PostMapping("/transactions/{id}/delete")
+    /**
+     * 删除页面中的指定收支记录。
+     */
     public String deletePage(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         transactionService.delete(id);
         redirectAttributes.addFlashAttribute("message", "收支记录已删除");
@@ -108,6 +135,9 @@ public class TransactionController {
 
     @GetMapping("/api/transactions")
     @ResponseBody
+    /**
+     * API 分页查询收支记录，支持类型、分类、月份和关键词筛选。
+     */
     public PageResult<Transaction> apiList(
             @RequestParam(required = false) Integer type,
             @RequestParam(required = false) Long categoryId,
@@ -128,12 +158,18 @@ public class TransactionController {
 
     @PostMapping("/api/transactions")
     @ResponseBody
+    /**
+     * API 新增收支记录。
+     */
     public Transaction apiCreate(@RequestBody Transaction transaction) {
         return transactionService.save(transaction);
     }
 
     @PutMapping("/api/transactions/{id}")
     @ResponseBody
+    /**
+     * API 更新指定收支记录。
+     */
     public Transaction apiUpdate(@PathVariable Long id, @RequestBody Transaction transaction) {
         transaction.setId(id);
         return transactionService.save(transaction);
@@ -141,11 +177,17 @@ public class TransactionController {
 
     @DeleteMapping("/api/transactions/{id}")
     @ResponseBody
+    /**
+     * API 删除指定收支记录。
+     */
     public void apiDelete(@PathVariable Long id) {
         transactionService.delete(id);
     }
 
     @ModelAttribute("today")
+    /**
+     * 向页面模型提供今天日期，方便表单默认值使用。
+     */
     public LocalDate today() {
         return LocalDate.now();
     }

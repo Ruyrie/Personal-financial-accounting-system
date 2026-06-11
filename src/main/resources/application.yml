@@ -1,3 +1,4 @@
+# 应用配置文件：配置数据源、SQL 初始化、Thymeleaf 缓存、服务端口和默认安全参数。
 spring:
   application:
     name: personal-finance-tracker

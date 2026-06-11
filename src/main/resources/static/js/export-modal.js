@@ -1,4 +1,5 @@
 (() => {
+    // Excel 导出弹窗脚本：选择导出范围、月份和收入/支出类型后发起下载。
     const triggers = document.querySelectorAll('[data-export-trigger]');
     if (!triggers.length) {
         return;
@@ -105,6 +106,7 @@
         }
     };
 
+    // 获取当前年月，格式为 yyyy-MM。
     const currentMonth = () => {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -112,6 +114,7 @@
     const now = new Date();
     let visibleYear = now.getFullYear();
 
+    // 将 yyyy-MM 格式转换成页面展示用的“yyyy年MM月”。
     const formatMonth = (value) => {
         if (!value) {
             return '';
@@ -120,24 +123,29 @@
         return `${year}年${month}月`;
     };
 
+    // 在导出弹窗中显示校验或接口错误提示。
     const showAlert = (message) => {
         alertBox.textContent = message;
         alertBox.hidden = false;
     };
 
+    // 清除导出弹窗中的提示信息。
     const clearAlert = () => {
         alertBox.hidden = true;
     };
 
+    // 关闭导出月份选择面板。
     const closeMonthMenu = () => {
         monthModal.hidden = true;
     };
 
+    // 打开导出月份选择面板，并先渲染月份按钮。
     const openMonthMenu = () => {
         renderExportMonths();
         monthModal.hidden = false;
     };
 
+    // 渲染当前可见年份的 12 个月份按钮，并同步选中态。
     const renderExportMonths = () => {
         yearLabel.textContent = visibleYear;
         monthLabel.textContent = monthInput.value ? formatMonth(monthInput.value) : '选择月份';
@@ -159,6 +167,7 @@
         });
     };
 
+    // 同步“全部月份”开关带来的表单可用状态和文案。
     const syncMonthMode = () => {
         const isAllMonths = allMonthsInput.checked;
         const scope = isAllMonths ? copyByScope.allMonths : copyByScope.selected;
@@ -176,6 +185,7 @@
         clearAlert();
     };
 
+    // 控制导出按钮的加载态，防止重复点击。
     const setButtonsLoading = (isLoading) => {
         exportButtons.forEach((button) => {
             button.disabled = isLoading;
@@ -183,6 +193,7 @@
         });
     };
 
+    // 关闭导出弹窗并还原临时状态。
     const closeModal = () => {
         modal.hidden = true;
         document.body.classList.remove('modal-open');
@@ -191,6 +202,7 @@
         setButtonsLoading(false);
     };
 
+    // 打开导出弹窗，并从触发按钮携带的导出 URL 中恢复筛选条件。
     const openModal = (trigger) => {
         activeBase = trigger.dataset.exportBase || trigger.getAttribute('href') || '/transactions/export';
         const baseUrl = new URL(activeBase, window.location.origin);
@@ -203,6 +215,7 @@
         document.body.classList.add('modal-open');
     };
 
+    // 构造导出或预检查接口 URL，保留当前筛选条件。
     const buildUrl = (type, pathname) => {
         const url = new URL(activeBase, window.location.origin);
         if (type) {
@@ -221,11 +234,13 @@
         return url;
     };
 
+    // 构造最终 Excel 下载地址。
     const buildExportUrl = (type) => {
         const url = buildUrl(type);
         return `${url.pathname}${url.search}`;
     };
 
+    // 调用列表 API 预检查当前条件下是否存在可导出的记录。
     const countExportRows = async (type) => {
         const url = buildUrl(type, '/api/transactions');
         url.searchParams.set('page', '1');

@@ -20,6 +20,9 @@ import java.util.Base64;
 import java.util.Set;
 
 @Service
+/**
+ * 用户业务服务，负责登录认证数据加载、注册、密码管理、头像上传和当前用户定位。
+ */
 public class UserService implements UserDetailsService {
     private static final long MAX_AVATAR_BYTES = 512 * 1024;
     private static final Set<String> ALLOWED_AVATAR_TYPES = Set.of("image/png", "image/jpeg", "image/webp");
@@ -35,6 +38,9 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
+    /**
+     * Spring Security 登录时根据用户名加载账号和加密密码。
+     */
     public UserDetails loadUserByUsername(String username) {
         AppUser user = userDao.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
@@ -45,6 +51,9 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
+    /**
+     * 注册新用户，并在同一事务中创建默认收支分类。
+     */
     public AppUser register(String username, String password, String confirmPassword) {
         String normalizedUsername = normalizeUsername(username);
         validatePassword(password, confirmPassword);
@@ -56,6 +65,9 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
+    /**
+     * 通过用户名重置密码，用于找回密码页面。
+     */
     public void resetPassword(String username, String password, String confirmPassword) {
         String normalizedUsername = normalizeUsername(username);
         validatePassword(password, confirmPassword);
@@ -64,6 +76,9 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    /**
+     * 修改当前登录用户密码，并禁止新密码与旧密码相同。
+     */
     public void changePassword(String password, String confirmPassword) {
         AppUser user = currentUser();
         validatePassword(password, confirmPassword);
@@ -73,10 +88,16 @@ public class UserService implements UserDetailsService {
         userDao.updatePasswordByUsername(user.getUsername(), passwordEncoder.encode(password));
     }
 
+    /**
+     * 获取当前登录用户的数据库主键，供分类和收支记录实现用户隔离。
+     */
     public Long currentUserId() {
         return currentUser().getId();
     }
 
+    /**
+     * 从 Spring Security 上下文读取当前登录用户，并查询完整用户信息。
+     */
     public AppUser currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -86,6 +107,9 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
     }
 
+    /**
+     * 校验头像文件类型和大小，并将图片转为 Data URL 保存到数据库。
+     */
     public void updateAvatar(MultipartFile avatar) {
         if (avatar == null || avatar.isEmpty()) {
             throw new IllegalArgumentException("请选择头像图片");
@@ -105,6 +129,9 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    /**
+     * 标准化并校验用户名格式。
+     */
     private String normalizeUsername(String username) {
         String normalizedUsername = username == null ? "" : username.trim();
         if (!StringUtils.hasText(normalizedUsername)) {
@@ -119,6 +146,9 @@ public class UserService implements UserDetailsService {
         return normalizedUsername;
     }
 
+    /**
+     * 校验密码长度和两次输入是否一致。
+     */
     private void validatePassword(String password, String confirmPassword) {
         if (!StringUtils.hasText(password) || password.length() < 6) {
             throw new IllegalArgumentException("密码至少6位");

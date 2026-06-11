@@ -8,6 +8,9 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 
 @Service
+/**
+ * 分类业务服务，负责按当前用户隔离分类数据，并执行分类保存和删除校验。
+ */
 public class CategoryService {
     private final CategoryDao categoryDao;
     private final UserService userService;
@@ -17,19 +20,31 @@ public class CategoryService {
         this.userService = userService;
     }
 
+    /**
+     * 查询当前用户的全部分类。
+     */
     public List<Category> findAll() {
         return categoryDao.findAll(userService.currentUserId());
     }
 
+    /**
+     * 查询当前用户指定类型的分类，type 为 1 表示收入，2 表示支出。
+     */
     public List<Category> findByType(int type) {
         return categoryDao.findByType(userService.currentUserId(), type);
     }
 
+    /**
+     * 查询当前用户指定分类，不存在时抛出业务异常。
+     */
     public Category findById(Long id) {
         return categoryDao.findById(userService.currentUserId(), id)
                 .orElseThrow(() -> new IllegalArgumentException("分类不存在"));
     }
 
+    /**
+     * 保存分类；没有 id 时新增，有 id 时更新。
+     */
     public Category save(Category category) {
         validate(category);
         Long userId = userService.currentUserId();
@@ -43,6 +58,9 @@ public class CategoryService {
         return category;
     }
 
+    /**
+     * 删除分类；若分类已有收支记录则禁止删除，避免历史记录失去分类。
+     */
     public void delete(Long id) {
         Long userId = userService.currentUserId();
         if (categoryDao.countTransactions(userId, id) > 0) {
@@ -53,6 +71,9 @@ public class CategoryService {
         }
     }
 
+    /**
+     * 校验分类名称、类型，并补齐默认图标和排序值。
+     */
     private void validate(Category category) {
         if (!StringUtils.hasText(category.getName())) {
             throw new IllegalArgumentException("分类名称不能为空");

@@ -9,6 +9,9 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 @Component
+/**
+ * 简单数据库迁移组件，用于兼容旧表结构缺少 avatar_data 字段的情况。
+ */
 public class DatabaseMigration {
     private final JdbcTemplate jdbcTemplate;
 
@@ -17,6 +20,9 @@ public class DatabaseMigration {
     }
 
     @PostConstruct
+    /**
+     * 应用启动后检查 app_user 表，缺少头像字段时自动补列。
+     */
     public void migrate() {
         jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
             try (ResultSet columns = connection.getMetaData().getColumns(

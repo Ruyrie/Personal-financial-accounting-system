@@ -1,3 +1,4 @@
+-- 数据库初始化脚本：创建用户、分类、收支记录三张核心表，并写入默认演示数据。
 CREATE TABLE IF NOT EXISTS app_user (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(30) NOT NULL UNIQUE,

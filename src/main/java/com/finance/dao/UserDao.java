@@ -14,9 +14,15 @@ import java.util.Map;
 import java.util.Optional;
 
 @Repository
+/**
+ * 用户表 app_user 的数据库访问对象，封装用户查询、创建和资料更新 SQL。
+ */
 public class UserDao {
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * 将 app_user 查询结果映射为 AppUser 实体。
+     */
     private final RowMapper<AppUser> rowMapper = (rs, rowNum) -> {
         AppUser user = new AppUser();
         user.setId(rs.getLong("id"));
@@ -31,6 +37,9 @@ public class UserDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * 根据用户名查询用户，用于登录、注册校验和当前用户定位。
+     */
     public Optional<AppUser> findByUsername(String username) {
         List<AppUser> users = jdbcTemplate.query(
                 "SELECT * FROM app_user WHERE username = ?",
@@ -40,6 +49,9 @@ public class UserDao {
         return users.stream().findFirst();
     }
 
+    /**
+     * 判断用户名是否已经存在。
+     */
     public boolean existsByUsername(String username) {
         Long count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM app_user WHERE username = ?",
@@ -49,6 +61,9 @@ public class UserDao {
         return count != null && count > 0;
     }
 
+    /**
+     * 更新用户头像 Data URL。
+     */
     public void updateAvatar(Long id, String avatarData) {
         jdbcTemplate.update(
                 "UPDATE app_user SET avatar_data = ? WHERE id = ?",
@@ -57,6 +72,9 @@ public class UserDao {
         );
     }
 
+    /**
+     * 根据用户名更新加密后的密码。
+     */
     public int updatePasswordByUsername(String username, String password) {
         return jdbcTemplate.update(
                 "UPDATE app_user SET password = ? WHERE username = ?",
@@ -65,6 +83,9 @@ public class UserDao {
         );
     }
 
+    /**
+     * 创建新用户并回填数据库生成的主键。
+     */
     public AppUser create(String username, String password) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -86,6 +107,9 @@ public class UserDao {
         return user;
     }
 
+    /**
+     * 从 JDBC KeyHolder 中兼容获取自增主键。
+     */
     private Number generatedId(KeyHolder keyHolder) {
         Map<String, Object> keys = keyHolder.getKeys();
         if (keys == null || keys.isEmpty()) {

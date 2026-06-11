@@ -15,9 +15,15 @@ import java.util.Map;
 import java.util.Optional;
 
 @Repository
+/**
+ * 分类表 category 的数据库访问对象，负责分类 CRUD 和默认分类初始化。
+ */
 public class CategoryDao {
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * 将 category 查询结果映射为 Category 实体。
+     */
     private final RowMapper<Category> rowMapper = (rs, rowNum) -> {
         Category category = new Category();
         category.setId(rs.getLong("id"));
@@ -34,6 +40,9 @@ public class CategoryDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * 查询用户的全部分类，并按类型和排序值排列。
+     */
     public List<Category> findAll(Long userId) {
         return jdbcTemplate.query(
                 "SELECT * FROM category WHERE user_id = ? ORDER BY type, sort_order, id",
@@ -42,6 +51,9 @@ public class CategoryDao {
         );
     }
 
+    /**
+     * 查询用户指定收入/支出类型下的分类。
+     */
     public List<Category> findByType(Long userId, int type) {
         return jdbcTemplate.query(
                 "SELECT * FROM category WHERE user_id = ? AND type = ? ORDER BY sort_order, id",
@@ -51,6 +63,9 @@ public class CategoryDao {
         );
     }
 
+    /**
+     * 根据用户和分类 id 查询单个分类。
+     */
     public Optional<Category> findById(Long userId, Long id) {
         List<Category> categories = jdbcTemplate.query(
                 "SELECT * FROM category WHERE user_id = ? AND id = ?",
@@ -61,6 +76,9 @@ public class CategoryDao {
         return categories.stream().findFirst();
     }
 
+    /**
+     * 新增分类并回填数据库生成的主键。
+     */
     public Category create(Long userId, Category category) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -83,6 +101,9 @@ public class CategoryDao {
         return category;
     }
 
+    /**
+     * 更新用户自己的分类信息。
+     */
     public int update(Long userId, Category category) {
         return jdbcTemplate.update(
                 "UPDATE category SET name = ?, type = ?, icon = ?, sort_order = ? WHERE user_id = ? AND id = ?",
@@ -95,10 +116,16 @@ public class CategoryDao {
         );
     }
 
+    /**
+     * 删除用户自己的分类。
+     */
     public int delete(Long userId, Long id) {
         return jdbcTemplate.update("DELETE FROM category WHERE user_id = ? AND id = ?", userId, id);
     }
 
+    /**
+     * 统计指定分类下的收支记录数量，用于删除前保护。
+     */
     public long countTransactions(Long userId, Long id) {
         return jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM `transaction` WHERE user_id = ? AND category_id = ?",
@@ -108,6 +135,9 @@ public class CategoryDao {
         );
     }
 
+    /**
+     * 新用户注册后批量创建默认收入和支出分类。
+     */
     public void createDefaultsForUser(Long userId) {
         List<DefaultCategory> defaults = Arrays.asList(
                 new DefaultCategory("工资", 1, "briefcase", 1),
@@ -134,9 +164,15 @@ public class CategoryDao {
         );
     }
 
+    /**
+     * 默认分类配置项。
+     */
     private record DefaultCategory(String name, int type, String icon, int sortOrder) {
     }
 
+    /**
+     * 从 JDBC KeyHolder 中兼容获取自增主键。
+     */
     private Number generatedId(KeyHolder keyHolder) {
         Map<String, Object> keys = keyHolder.getKeys();
         if (keys == null || keys.isEmpty()) {

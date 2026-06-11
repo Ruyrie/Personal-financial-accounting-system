@@ -12,6 +12,9 @@ import java.time.YearMonth;
 import java.util.List;
 
 @RestController
+/**
+ * 提供统计类 JSON API，方便图表或外部调用获取月度统计数据。
+ */
 public class StatsController {
     private final TransactionService transactionService;
 
@@ -20,11 +23,17 @@ public class StatsController {
     }
 
     @GetMapping("/api/stats/monthly")
+    /**
+     * 返回指定月份的收入、支出和结余统计。
+     */
     public MonthlyStats monthly(@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth month) {
         return transactionService.monthlyStats(month == null ? YearMonth.now() : month);
     }
 
     @GetMapping("/api/stats/by-category")
+    /**
+     * 返回指定月份的支出分类占比数据。
+     */
     public List<CategoryStats> byCategory(@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth month) {
         return transactionService.expenseStatsByCategory(month == null ? YearMonth.now() : month);
     }

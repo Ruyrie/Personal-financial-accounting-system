@@ -1,4 +1,5 @@
 (function () {
+    // 修改密码弹窗脚本：动态创建弹窗，并绑定打开、关闭、Esc 退出行为。
     const triggers = document.querySelectorAll('[data-open-password-modal]');
     if (!triggers.length) {
         return;
@@ -37,12 +38,14 @@
     const form = modal.querySelector('form');
     const firstInput = modal.querySelector('input');
 
+    // 关闭弹窗时恢复页面滚动状态并清空表单。
     const closeModal = () => {
         modal.hidden = true;
         document.body.classList.remove('modal-open');
         form.reset();
     };
 
+    // 打开弹窗后聚焦第一个密码输入框。
     const openModal = () => {
         modal.hidden = false;
         document.body.classList.add('modal-open');
